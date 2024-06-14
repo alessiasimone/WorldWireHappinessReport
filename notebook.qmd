@@ -1,0 +1,72 @@
+---
+title: "World Happiness Report"
+format: html
+editor: visual
+---
+
+```{r}
+library(readr)
+library(countrycode)
+library(dplyr)
+library(GGally)
+library(visdat)
+library(skimr)
+library(DataExplorer)
+library(corrplot)
+library(lattice)
+library(car)        
+library(lme4)       
+library(tidyverse)
+```
+
+## Introduction
+
+The World Happiness Report is a publication from the Sustainable Development Solution Network, which measures the happiness score by considering responses from a subsample of the worldwide population.
+
+The happiness score is mainly based on people's satisfaction with their lives; the main factor that contributes to the satisfaction are six:
+
+-   GDP (Gross Domestic Product): how much each country produce, divided by the number of people in the country;
+
+-   Social Support: having someone to count on in case of trouble;
+
+-   Healthy Life Expectancy: physical and mental health status;
+
+-   Freedom to make life choices refers to human rights, including sex, ethnicity, nationality, language, and religion;
+
+-   Generosity: measured in how much people donate to charity;
+
+-   Perception of corruption: if people trust in the government and the benevolence of others.
+
+A helpful tool to predict the population's happiness from those characteristics can be implemented using a Machine Learning model. For this reason, I implemented a **Linear Mixed Effect model** to predict the happiness score of the continent for the year 2022.
+
+## Exploratory Data Analysis and Data Preprocessing
+
+```{r}
+data <- read_delim(file.choose(), delim = ";", escape_double = FALSE, trim_ws = TRUE)
+head(data)
+```
+
+The original dataset contains 2199 observations of 11 variables: country name, year, life ladder, generosity, GDP, social support, life expectancy, freedom, corruption, and negative and positive effects.
+
+As a first step, I extracted the continent from the country name to decrease the grouping variable into size 5: Africa, Asia, Europe, North America, Oceania, South America, and Antarctica.
+
+```{r}
+df <- data %>%
+  mutate(continent_code = countrycode(Country name, "country.name", "continent")) %>%
+  mutate(continent = case_when(
+    continent_code == "AF" ~ "Africa",
+    continent_code == "AS" ~ "Asia",
+    continent_code == "EU" ~ "Europe",
+    continent_code == "NA" ~ "North America",
+    continent_code == "OC" ~ "Oceania",
+    continent_code == "SA" ~ "South America",
+    continent_code == "AN" ~ "Antarctica",
+    TRUE ~ "Unknown"
+  ))
+
+
+df <- df[2:12]
+df$continent_code <- as.factor(df$continent_code)
+df <- na.omit(df)
+head(df)
+```
